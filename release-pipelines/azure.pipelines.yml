@@ -1,0 +1,49 @@
+resources:
+  pipelines:
+  - pipeline: parent
+    source: dotnetapi
+    trigger: 
+      branches:
+      - master
+
+trigger: none
+
+pool:
+  vmImage: 'ubuntu-latest'
+variables:
+  - name: GrafanaImageName
+    value: ""
+  
+steps:
+  - task: DownloadBuildArtifacts@0
+    displayName: 'Download variables'
+    inputs:
+      buildType: 'specific'
+      project: 'sandbox'
+      pipeline: 'dotnetapi'
+      buildVersionToDownload: 'latest'
+      downloadType: 'specific'
+      downloadPath: '$(System.ArtifactsDirectory)'
+
+  - bash: | 
+      cat $(System.ArtifactsDirectory)/variables/pipeline.env
+    displayName: 'Restore Environment Variables'
+    name: outputVar
+
+  - bash: | 
+      echo "Image Name:$(GrafanaImageName)"
+    displayName: 'echo Environment variables'
+
+ 
+
+  # - bash: |
+  #     sed -i "s/{{image-tag}}/$(buildnum)/g" ./test-manifest.yml
+  #   displayName: "replace var"
+    
+  # - bash: |
+  #     input="./test-manifest.yml"
+  #     while IFS= read -r line
+  #     do
+  #       echo "$line"
+  #     done < "$input"
+  #   displayName: print file
